@@ -2,6 +2,7 @@ package com.github.coderodde.graph.sp;
 
 import com.github.coderodde.graph.impl.DirectedGraph;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -26,4 +27,9 @@ public abstract class AbstractDagShortestPathQueryProvider {
     
     public abstract List<Integer> queryShortestPath(Integer sourceNode,
                                                     Integer targetNode);
+    
+    protected List<Integer> tracebackPath(Integer node,
+                                          Map<Integer, Integer> parentMap) {
+        Lis
+    }
 }
