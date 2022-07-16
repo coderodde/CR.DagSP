@@ -20,6 +20,7 @@ public class KahnsTopologicalSorter implements TopologicalSorter {
     public List<Integer> sort(DirectedGraph graph)
             throws GraphContainsCyclesException {
         
+        List<Integer> children = new ArrayList<>(graph.size());
         // First, get a copy of the input graph, since the algorithm  removes
         // the arcs from the graph it works on:
         graph = new DirectedGraph(graph);
@@ -30,7 +31,10 @@ public class KahnsTopologicalSorter implements TopologicalSorter {
             Integer node = removeFromSet(nodesToProcess);
             sortedNodeList.add(node);
             
-            for (Integer child : graph.getChildrenOf(node)) {
+            children.clear();
+            children.addAll(graph.getChildrenOf(node));
+            
+            for (Integer child : children) {
                 graph.removeEdge(node, child);
                 
                 if (graph.getParentsOf(child).size() == 0) {

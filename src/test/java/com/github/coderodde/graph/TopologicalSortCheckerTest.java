@@ -1,6 +1,9 @@
 package com.github.coderodde.graph;
 
+import static com.github.coderodde.graph.TopologicalSortChecker.isTopologicallySorted;
 import com.github.coderodde.graph.impl.DirectedGraph;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -35,14 +38,25 @@ public class TopologicalSortCheckerTest {
      */
     @Test
     public void testIsTopologicallySorted() {
-        System.out.println("isTopologicallySorted");
-        DirectedGraph graph = null;
-        List<Integer> nodes = null;
-        boolean expResult = false;
-        boolean result = TopologicalSortChecker.isTopologicallySorted(graph, nodes);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        DirectedGraph g = new DirectedGraph();
+        List<Integer> nodeList = new ArrayList<>();
+        
+        g.addEdge(1, 2, 1.0);
+        g.addEdge(2, 3, 2.0);
+        g.addEdge(1, 4, 3.0);
+        g.addEdge(4, 3, 4.0);
+        
+        nodeList.addAll(Arrays.asList(1, 2, 4, 3));
+                
+        boolean topologicallySorted = isTopologicallySorted(g, nodeList);
+        
+        assertTrue(topologicallySorted);
+        
+        nodeList.clear();
+        nodeList.addAll(Arrays.asList(1, 2, 3, 4));
+                
+        topologicallySorted = isTopologicallySorted(g, nodeList);
+        
+        assertFalse(topologicallySorted);
     }
-    
 }
