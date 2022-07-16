@@ -89,6 +89,8 @@ public class DirectedGraph extends AbstractGraph {
 
         parentMap.put(nodeId, new LinkedHashMap<>());
         childMap .put(nodeId, new LinkedHashMap<>());
+        callListenersOnAddNode(nodeId);
+        callListenersOnAny();
         modificationCount++;
         return true;
     }
@@ -127,7 +129,9 @@ public class DirectedGraph extends AbstractGraph {
 
         int mod = parents.size() + children.size();
         edges -= mod;
-        modificationCount += mod;
+        modificationCount++;
+        callListenersOnClearNode(nodeId);
+        callListenersOnAny();
         parents.clear();
         children.clear();
         return true;
@@ -145,6 +149,8 @@ public class DirectedGraph extends AbstractGraph {
         clearNode(nodeId);
         parentMap.remove(nodeId);
         childMap.remove(nodeId);
+        callListenersOnRemoveNode(nodeId);
+        callListenersOnAny();
         modificationCount++;
         return true;
     }
@@ -153,26 +159,33 @@ public class DirectedGraph extends AbstractGraph {
      * {@inheritDoc}
      */
     @Override
-    public boolean addEdge(int tailNodeId, int headNodeId, double weight) {
+    public boolean addEdge(int tailNodeId, int headNodeId, double newWeight) {
         addNode(tailNodeId);
         addNode(headNodeId);
 
         if (childMap.get(tailNodeId).containsKey(headNodeId)) {
             double oldWeight = childMap.get(tailNodeId).get(headNodeId);
-            childMap.get(tailNodeId).put(headNodeId, weight);
-            parentMap.get(headNodeId).put(tailNodeId, weight);
+            childMap.get(tailNodeId).put(headNodeId, newWeight);
+            parentMap.get(headNodeId).put(tailNodeId, newWeight);
             
-            if (oldWeight != weight) {
+            if (oldWeight != newWeight) {
                 modificationCount++;
+                callListenersOnUpdateEdgeWeight(tailNodeId, 
+                                                headNodeId, 
+                                                oldWeight, 
+                                                newWeight);
+                callListenersOnAny();
                 return true;
             }
             
             return false;
         } else {
-            childMap.get(tailNodeId).put(headNodeId, weight);
-            parentMap.get(headNodeId).put(tailNodeId, weight);
+            childMap.get(tailNodeId).put(headNodeId, newWeight);
+            parentMap.get(headNodeId).put(tailNodeId, newWeight);
             modificationCount++;
             edges++;
+            callListenersOnAddEdge(tailNodeId, headNodeId, newWeight);
+            callListenersOnAny();
             return true;
         }
     }
@@ -214,10 +227,13 @@ public class DirectedGraph extends AbstractGraph {
             return false;
         }
 
+        double weight = childMap.get(tailNodeId).get(headNodeId);
         childMap .get(tailNodeId).remove(headNodeId);
         parentMap.get(headNodeId).remove(tailNodeId);
         modificationCount++;
         edges--;
+        callListenersOnRemoveEdge(tailNodeId, headNodeId, weight);
+        callListenersOnAny();
         return true;
     }
 
@@ -276,5 +292,7 @@ public class DirectedGraph extends AbstractGraph {
         childMap.clear();
         parentMap.clear();
         edges = 0;
+        callListenerssOnClearGraph();
+        callListenersOnAny();
     }
 }
