@@ -53,6 +53,7 @@ public class DFSTopologicalSorter implements TopologicalSorter {
             DirectedGraph graph, 
             List<Integer> sortedNodes) 
     throws GraphContainsCyclesException {
+        
         if (permanentlyMarked.contains(node)) {
             return;
         }
