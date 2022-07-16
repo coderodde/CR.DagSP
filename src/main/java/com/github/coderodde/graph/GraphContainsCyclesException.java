@@ -8,7 +8,7 @@ package com.github.coderodde.graph;
  * @version 1.6 (Jul 16, 2022)
  * @since 1.6 (Jul 16, 2022)
  */
-public class GraphContainsCyclesException extends Exception {
+public class GraphContainsCyclesException extends RuntimeException {
 
     public GraphContainsCyclesException() {
         super("The graph contains cycles.");

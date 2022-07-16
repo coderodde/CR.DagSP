@@ -2,6 +2,7 @@ package com.github.coderodde.graph.sp;
 
 import com.github.coderodde.graph.impl.DirectedGraph;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 
@@ -11,7 +12,17 @@ import java.util.List;
  */
 public abstract class AbstractDagShortestPathQueryProvider {
     
-    protected DirectedGraph graph;
+    protected final DirectedGraph graph;
+    protected final AbstractGraphPreprocessor graphPreprocessor;
+    
+    public AbstractDagShortestPathQueryProvider(
+            DirectedGraph graph,
+            AbstractGraphPreprocessor graphPreprocessor) {
+        this.graph = Objects.requireNonNull(graph);
+        this.graphPreprocessor = graphPreprocessor;
+    }
+    
+    public abstract long getPreprocessingDuration();
     
     public abstract List<Integer> queryShortestPath(Integer sourceNode,
                                                     Integer targetNode);
