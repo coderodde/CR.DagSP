@@ -11,7 +11,9 @@ import java.util.Set;
  * This class implements a directed graph.
  * 
  * @author Rodion "rodde" Efremov
+ * @version 1.61 (Jul 16, 2022)
  * @version 1.6 (Jan 11, 2016)
+ * @since 1.6 (Jan 11, 2016)
  */
 public class DirectedGraph extends AbstractGraph {
 
@@ -28,6 +30,12 @@ public class DirectedGraph extends AbstractGraph {
         
     }
     
+    /**
+     * A copy constructor. The input graph remains intact.
+     * 
+     * @param graph the graph whose graph topology to assume. This includes the
+     *              arc weights as well.
+     */
     public DirectedGraph(DirectedGraph graph) {
         for (Integer node : graph.getAllNodes()) {
             parentMap.put(node, new HashMap<>());
@@ -54,16 +62,25 @@ public class DirectedGraph extends AbstractGraph {
         edges = graph.edges;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int size() {
         return parentMap.size();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumberOfEdges() {
         return edges;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean addNode(int nodeId) {
         if (parentMap.containsKey(nodeId)) {
@@ -76,11 +93,17 @@ public class DirectedGraph extends AbstractGraph {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean hasNode(int nodeId) {
         return parentMap.containsKey(nodeId);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean clearNode(int nodeId) {
         if (!hasNode(nodeId)) {
@@ -110,6 +133,9 @@ public class DirectedGraph extends AbstractGraph {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean removeNode(int nodeId) {
         if (!hasNode(nodeId)) {
@@ -123,6 +149,9 @@ public class DirectedGraph extends AbstractGraph {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean addEdge(int tailNodeId, int headNodeId, double weight) {
         addNode(tailNodeId);
@@ -148,6 +177,9 @@ public class DirectedGraph extends AbstractGraph {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean hasEdge(int tailNodeId, int headNodeId) {
         if (!childMap.containsKey(tailNodeId)) {
@@ -157,6 +189,9 @@ public class DirectedGraph extends AbstractGraph {
         return childMap.get(tailNodeId).containsKey(headNodeId);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getEdgeWeight(int tailNodeId, int headNodeId) {
         if (!hasEdge(tailNodeId, headNodeId)) {
@@ -166,6 +201,9 @@ public class DirectedGraph extends AbstractGraph {
         return childMap.get(tailNodeId).get(headNodeId);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean removeEdge(int tailNodeId, int headNodeId) {
         if (!childMap.containsKey(tailNodeId)) {
@@ -183,6 +221,9 @@ public class DirectedGraph extends AbstractGraph {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<Integer> getChildrenOf(int nodeId) {
         if (!childMap.containsKey(nodeId)) {
@@ -193,6 +234,9 @@ public class DirectedGraph extends AbstractGraph {
                 <Integer>unmodifiableSet(childMap.get(nodeId).keySet());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<Integer> getParentsOf(int nodeId) {
         if (!parentMap.containsKey(nodeId)) {
@@ -203,11 +247,17 @@ public class DirectedGraph extends AbstractGraph {
                 <Integer>unmodifiableSet(parentMap.get(nodeId).keySet());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<Integer> getAllNodes() {
         return Collections.<Integer>unmodifiableSet(childMap.keySet());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void clear() {
         for (Map.Entry<Integer, Map<Integer, Double>> entry : 

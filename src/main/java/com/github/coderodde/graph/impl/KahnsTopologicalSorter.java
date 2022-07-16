@@ -44,7 +44,7 @@ public class KahnsTopologicalSorter implements TopologicalSorter {
         }
         
         if (graph.getNumberOfEdges() > 0) {
-            throw new GraphContainsCyclesException("The input digraph is not acyclic.");
+            throw new GraphContainsCyclesException();
         }
         
         return sortedNodeList;

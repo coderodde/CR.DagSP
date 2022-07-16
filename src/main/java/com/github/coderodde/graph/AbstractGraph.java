@@ -1,5 +1,7 @@
 package com.github.coderodde.graph;
 
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -31,6 +33,11 @@ public abstract class AbstractGraph {
      * Caches the number of edges in this graph.
      */
     protected int edges;
+    
+    /**
+     * The set of graph topology listeners.
+     */
+    protected Set<GraphTopologyListener> listeners = new HashSet<>();
 
     /**
      * Returns the number of nodes in this graph.
@@ -187,5 +194,123 @@ public abstract class AbstractGraph {
      */
     public int getModificationCount() {
         return modificationCount;
+    }
+    
+    /**
+     * Adds a listener to this graph.
+     * 
+     * @param listener the listener to add.
+     */
+    public void addGraphTopologyListener(GraphTopologyListener listener) {
+        listeners.add(Objects.requireNonNull(listener));
+    }
+    
+    /**
+     * Removes a listener from this graph.
+     * 
+     * @param listener the listener to remove.
+     */
+    public void removeGraphTopologyListener(GraphTopologyListener listener) {
+        listeners.remove(listener);
+    }
+    
+    /**
+     * Delegates the {@code onAddNode} message to all the listeners.
+     * @param node 
+     */
+    protected void callListenersOnAddNode(Integer node) {
+        for (GraphTopologyListener listener : listeners) {
+            listener.onAddNode(node);
+        }
+    }
+    
+    /**
+     * Delegates the {@code onAddEdge} message to all the listeners.
+     * 
+     * @param tail the tail node of the added edge.
+     * @param head the head node of the added edge.
+     * @param weight the weight of the added edge.
+     */
+    protected void callListenersOnAddEdge(Integer tail, 
+                                          Integer head, 
+                                          double weight) {
+        for (GraphTopologyListener listener : listeners) {
+            listener.onAddEdge(tail, head, weight);
+        }
+    }
+    
+    /**
+     * Delegates the {@code onUpdateEdgeWeight} message to all the listeners.
+     * 
+     * @param tail the tail node of the updated edge.
+     * @param head the head node of the updated edge.
+     * @param oldWeight the old weight of the updated edge.
+     * @param newWeight the new weight of the updated edge.
+     */
+    protected void callListenersOnUpdateEdgeWeight(Integer tail, 
+                                                   Integer head, 
+                                                   double oldWeight,
+                                                   double newWeight) {
+        for (GraphTopologyListener listener : listeners) {
+            listener.onUpdateEdgeWeight(tail, 
+                                        head, 
+                                        oldWeight, 
+                                        newWeight);
+        }
+    }
+    
+    /**
+     * Delegates the {@code onRemoveNode} message to all the listeners.
+     * 
+     * @param node the removed node.
+     */
+    protected void callListenersOnRemoveNode(Integer node) {
+        for (GraphTopologyListener listener : listeners) {
+            listener.onRemoveNode(node);
+        }
+    }
+    
+    /**
+     * Delegates the {@code onClearNode} message to all the listeners.
+     * 
+     * @param node the removed node.
+     */
+    protected void callListenersOnClearNode(Integer node) {
+        for (GraphTopologyListener listener : listeners) {
+            listener.onClearNode(node);
+        }
+    }
+    
+    /**
+     * Delegates the {@code onRemoveEdge} message to all the listeners.
+     * 
+     * @param tail the tail node of the removed edge.
+     * @param head the head node of the removed edge.
+     * @param weight the weight of the removed edge.
+     */
+    protected void callListenersOnRemoveEdge(Integer tail, 
+                                             Integer head, 
+                                             double weight) {
+        for (GraphTopologyListener listener : listeners) {
+            listener.onRemoveEdge(tail, head, weight);
+        }
+    }
+    
+    /**
+     * Delegates the {@code onClearGraph} message to all the listeners.
+     */
+    protected void callListenerssOnClearGraph() {
+        for (GraphTopologyListener listener : listeners) {
+            listener.onClearGraph();
+        }
+    }
+    
+    /**
+     * Delegates a message that any of the graph topology changed.
+     */
+    protected void callListenersOnAny() {
+        for (GraphTopologyListener listener : listeners) {
+            listener.onAny();
+        }
     }
 }

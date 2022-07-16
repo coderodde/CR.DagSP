@@ -58,8 +58,7 @@ public class DFSTopologicalSorter implements TopologicalSorter {
         }
         
         if (temporarilyMarked.contains(node)) {
-            throw new GraphContainsCyclesException(
-                    "The input graph is not acyclic.");
+            throw new GraphContainsCyclesException();
         }
         
         temporarilyMarked.add(node);
