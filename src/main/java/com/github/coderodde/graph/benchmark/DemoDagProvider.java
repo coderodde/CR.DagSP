@@ -13,14 +13,25 @@ public class DemoDagProvider {
     private static final int MAXIMUM_LAYER_JUMP = 4;
 
     public static final class DemoData {
-        public DirectedGraph graph;
-        public List<List<Integer>> graphLayers;
-        public List<Integer> unreachableNodes;
+        public final DirectedGraph graph;
+        public final List<List<Integer>> graphLayers;
+        public Integer isolatedNode;
+        
+        DemoData() {
+            this.graph = new DirectedGraph();
+            this.graphLayers = new ArrayList<>(LAYERS);
+        }
+    }
+    
+    public static DemoData getDemoData(Random random) {
+        DemoData demoData = new DemoData();
+        getDagLayers(demoData, random);
+        createLayerArcs(demoData, random);
+        getIsolatedNode(demoData, random);
+        return demoData;
     }
     
     private static void getDagLayers(DemoData demoData, Random random) {
-        DirectedGraph dag = new DirectedGraph();
-        List<List<Integer>> layers = new ArrayList<>(LAYERS);
         int node = 0;
         
         for (int layerNumber = 0; layerNumber < LAYERS; layerNumber++) {
@@ -33,14 +44,38 @@ public class DemoDagProvider {
                 layer.add(node);
             }
             
-            layers.add(layer);
+            demoData.graphLayers.add(layer);
         }
-        
-        demoData.graphLayers = layers;
-        demoData.graph = dag;
+    }
+    
+    private static void getIsolatedNode(DemoData demoData, Random random) {
+        int layerIndex = random.nextInt(demoData.graphLayers.size());
+        List<Integer> layer = demoData.graphLayers.get(layerIndex);
+        layer.add(random.nextInt(layer.size()), demoData.graph.size() + 1);
     }
     
     private static void createLayerArcs(DemoData demoData, Random random) {
+        int totalLayers = demoData.graphLayers.size();
         
+        for (int layerIndex = 0; layerIndex < totalLayers; layerIndex++) {
+            createLayerArcsForLayer(demoData, random, layerIndex);
+        }
+    }
+    
+    private static void createLayerArcsForLayer(DemoData demoData,
+                                                Random random,
+                                                int layerIndex) {
+        int totalLayers = demoData.graphLayers.size();
+        List<Integer> sourceLayer = demoData.graphLayers.get(layerIndex);
+        
+        for (Integer node : sourceLayer) {
+            int nextLayerIndex = random.nextInt(1, MAXIMUM_LAYER_JUMP + 1);
+            nextLayerIndex = Math.min(layerIndex + nextLayerIndex, 
+                                      totalLayers - 1);
+            
+            List<Integer> nextLayer = demoData.graphLayers.get(nextLayerIndex);
+            Integer nextNode = nextLayer.get(random.nextInt(nextLayer.size()));
+            demoData.graph.addEdge(node, nextNode, random.nextDouble());
+        }
     }
 }
