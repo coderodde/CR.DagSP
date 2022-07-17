@@ -1,9 +1,11 @@
 package com.github.coderodde.graph.impl;
 
 import com.github.coderodde.graph.AbstractGraph;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,6 +19,37 @@ import java.util.Set;
  */
 public class DirectedGraph extends AbstractGraph {
 
+    public static class Path {
+        private final DirectedGraph ownerGraph;
+        private final List<Integer> pathNodes = new ArrayList<>();
+        private final double totalCost;
+        
+        public Path(DirectedGraph ownerGraph, List<Integer> pathNodes) {
+            this.ownerGraph = ownerGraph;
+            this.pathNodes.addAll(pathNodes);
+            this.totalCost = computeTotalCost();
+        }
+        
+        public Integer getNode(int index) {
+            return pathNodes.get(index);
+        }
+        
+        public double getTotalCost() {
+            return totalCost;
+        }
+        
+        private double computeTotalCost() {
+            double totalCost = 0.0;
+            
+            for (int i = 0; i < pathNodes.size() - 1; ++i) {
+                totalCost = ownerGraph.getEdgeWeight(pathNodes.get(i),
+                                                     pathNodes.get(i + 1));
+            }
+            
+            return totalCost;
+        }
+    }
+    
     private final Map<Integer, 
                       Map<Integer, 
                           Double>> parentMap = new LinkedHashMap<>();

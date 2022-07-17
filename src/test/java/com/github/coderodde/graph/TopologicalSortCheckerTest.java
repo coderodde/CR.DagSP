@@ -58,5 +58,17 @@ public class TopologicalSortCheckerTest {
         topologicallySorted = isTopologicallySorted(g, nodeList);
         
         assertFalse(topologicallySorted);
+        
+        // Check the graph with a self-loop:
+        g.clear();
+        g.addEdge(1, 2, 1.0);
+        g.addEdge(2, 3, 2.0);
+        g.addEdge(2, 2, 3.0);
+        
+        nodeList.clear();
+        nodeList.addAll(Arrays.asList(1, 2, 3));
+        
+        topologicallySorted = isTopologicallySorted(g, nodeList);
+        assertFalse(topologicallySorted);
     }
 }
