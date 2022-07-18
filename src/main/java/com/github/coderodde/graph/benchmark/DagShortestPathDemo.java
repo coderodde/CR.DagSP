@@ -10,7 +10,10 @@ import com.github.coderodde.graph.sp.impl.DFSGraphPreprocessor;
 import com.github.coderodde.graph.sp.impl.IndexingPreprocessingDagShortestPathQueryRunner;
 import com.github.coderodde.graph.sp.impl.KahnsGraphPreprocessor;
 import com.github.coderodde.graph.sp.impl.NaivePreprocessingDagShortestPathQueryRunner;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
 import java.util.List;
 import java.util.Random;
 
@@ -289,16 +292,21 @@ public class DagShortestPathDemo {
                                              DemoData demoData, 
                                              Random random) {
         
-        DirectedGraph graph = demoData.graph;
-        Integer currentNode = sourceNode;
+        Deque<List<Integer>> layerPath = new ArrayDeque<>(jumps + 1);;
+        layerPath.push(Arrays.asList(sourceNode));
         
         for (int i = 0; i < jumps; i++) {
-            List<Integer> nextLayer =
-                    new ArrayList<>(graph.getChildrenOf(currentNode));
+            List<Integer> topLayer = layerPath.peek();
             
-            currentNode = choose(nextLayer, random);
+            if (topLayer.isEmpty()) {
+                layerPath.pop();
+                i--;
+                continue;
+            }
+            
+            layerPath.push(topLayer);
         }
         
-        return currentNode;
+        return choose(layerPath.peek(), random);
     }
 }
