@@ -7,7 +7,7 @@ import java.util.Random;
 
 public class DemoDagProvider {
     
-    private static final int LAYERS = 100_000;
+    private static final int LAYERS = 1000;
     private static final int MINIMUM_LAYER_SIZE = 10;
     private static final int MAXIMUM_LAYER_SIZE = 20;
     private static final int MAXIMUM_LAYER_JUMP = 4;
@@ -51,13 +51,16 @@ public class DemoDagProvider {
     private static void getIsolatedNode(DemoData demoData, Random random) {
         int layerIndex = random.nextInt(demoData.graphLayers.size());
         List<Integer> layer = demoData.graphLayers.get(layerIndex);
-        layer.add(random.nextInt(layer.size()), demoData.graph.size() + 1);
+        Integer isolatedNode = demoData.graph.size() + 2;
+        demoData.graph.addNode(isolatedNode);
+        layer.add(random.nextInt(layer.size()), isolatedNode);
+        demoData.isolatedNode = isolatedNode;
     }
     
     private static void createLayerArcs(DemoData demoData, Random random) {
         int totalLayers = demoData.graphLayers.size();
         
-        for (int layerIndex = 0; layerIndex < totalLayers; layerIndex++) {
+        for (int layerIndex = 0; layerIndex < totalLayers - 1; layerIndex++) {
             createLayerArcsForLayer(demoData, random, layerIndex);
         }
     }

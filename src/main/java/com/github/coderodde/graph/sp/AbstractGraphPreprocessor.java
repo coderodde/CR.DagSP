@@ -42,6 +42,7 @@ public abstract class AbstractGraphPreprocessor {
         long duration = endTime - startTime;
         
         this.preprocessingDuration = duration;
+        computeIndexMap();
     }
     
     public List<Integer> getTopologicallySortedNodes() {

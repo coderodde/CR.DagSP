@@ -186,7 +186,7 @@ public class DagShortestPathDemo {
                 System.out.print("Path cost: " + path.getTotalCost() + ". ");
             }
             
-            System.out.println("Duration: " + searchResult.duration + "^ms.");
+            System.out.println("Duration: " + searchResult.duration + " ms.");
         }
     }
     
@@ -196,15 +196,17 @@ public class DagShortestPathDemo {
             Integer targetNode) {
         
         String algorithmName = runner.getClass().getSimpleName();
+        long startTime = System.currentTimeMillis(); 
         
         try {
-            long startTime = System.currentTimeMillis(); 
             Path path = runner.queryShortestPath(sourceNode, targetNode);
             long endTime = System.currentTimeMillis();
             long duration = endTime - startTime;
             return new SearchResult(path, duration, algorithmName);
         } catch (PathDoesNotExistException ex) {
-            return new SearchResult(null, -1L, algorithmName);
+            long endTime = System.currentTimeMillis();
+            long duration = endTime - startTime;
+            return new SearchResult(null, duration, algorithmName);
         }
     }
     

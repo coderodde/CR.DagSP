@@ -18,6 +18,8 @@ public abstract class AbstractDagShortestPathQueryRunner {
     protected final DirectedGraph graph;
     protected final AbstractGraphPreprocessor graphPreprocessor;
     
+    protected long expectedGraphModCount = -1L;
+    
     public AbstractDagShortestPathQueryRunner(
             DirectedGraph graph,
             AbstractGraphPreprocessor graphPreprocessor) {
@@ -52,8 +54,8 @@ public abstract class AbstractDagShortestPathQueryRunner {
         Collections.reverse(pathList);
         return new DirectedGraph.Path(graph, pathList);
     }
-        
-    protected void checkSourceNodeInGraph(Integer sourceNode) {
+    
+    protected void checkSourceNode(Integer sourceNode) {
         if (!graph.hasNode(sourceNode)) {
             throw new IllegalArgumentException(
                     "The source node (" 
@@ -62,7 +64,7 @@ public abstract class AbstractDagShortestPathQueryRunner {
         }
     }
     
-    protected void checkTargetNodeInGraph(Integer targetNode) {
+    protected void checkTargetNode(Integer targetNode) {   
         if (!graph.hasNode(targetNode)) {
             throw new IllegalArgumentException(
                     "The target node (" 

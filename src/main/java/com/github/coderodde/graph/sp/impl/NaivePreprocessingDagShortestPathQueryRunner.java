@@ -1,10 +1,10 @@
 package com.github.coderodde.graph.sp.impl;
 
-import com.github.coderodde.graph.GraphTopologyListener;
 import com.github.coderodde.graph.PathDoesNotExistException;
 import com.github.coderodde.graph.impl.DirectedGraph;
 import com.github.coderodde.graph.sp.AbstractDagShortestPathQueryRunner;
 import com.github.coderodde.graph.sp.AbstractGraphPreprocessor;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +18,7 @@ import java.util.Map;
 public class NaivePreprocessingDagShortestPathQueryRunner 
         extends AbstractDagShortestPathQueryRunner {
     
-    private List<Integer> topologicallySortedNodes;
+    private final List<Integer> topologicallySortedNodes = new ArrayList<>();
     
     /**
      * Constructs the preprocessing shortest path query provider.
@@ -31,12 +31,16 @@ public class NaivePreprocessingDagShortestPathQueryRunner
             DirectedGraph graph,
             AbstractGraphPreprocessor graphPreprocessor) {
         super(graph, graphPreprocessor);
-        graph.addGraphTopologyListener(new AnyGraphOperationListener());
     }
 
     @Override
     public DirectedGraph.Path queryShortestPath(Integer sourceNode, 
                                                 Integer targetNode) {
+        // If this runner's expected mod count does not match the mod count of
+        // the graph, graph is changed and so we need to re-preprocess the 
+        // graph.
+        checkGraphDirtyStatus();
+        
         checkSourceNode(sourceNode);
         checkTargetNode(targetNode);
         
@@ -78,34 +82,13 @@ public class NaivePreprocessingDagShortestPathQueryRunner
         return graphPreprocessor.getPreprocessingDuration();
     }
     
-    private final class AnyGraphOperationListener 
-            implements GraphTopologyListener {
-        
-        @Override
-        public void onAny() {
+    private void checkGraphDirtyStatus() {
+        if (expectedGraphModCount != graph.getModificationCount()) {
+            expectedGraphModCount = graph.getModificationCount();
             graphPreprocessor.preprocessGraph();
-            topologicallySortedNodes = 
-                    graphPreprocessor.getTopologicallySortedNodes();
+            topologicallySortedNodes.clear();
+            topologicallySortedNodes.addAll(
+                    graphPreprocessor.getTopologicallySortedNodes());
         }
     }
-    
-    private void checkSourceNode(Integer sourceNode) {
-        if (!graph.hasNode(sourceNode)) {
-            throw new IllegalArgumentException(
-                    "The source node (" 
-                            + sourceNode 
-                            + ") is not in the graph.");
-        }
-    }
-    
-    private void checkTargetNode(Integer targetNode) {
-        
-        if (!graph.hasNode(targetNode)) {
-            throw new IllegalArgumentException(
-                    "The target node (" 
-                            + targetNode 
-                            + ") is not in the graph.");
-        }
-    }
-        
 }

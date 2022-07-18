@@ -81,49 +81,6 @@ public class DFSTopologicalSorter implements TopologicalSorter {
                 temporarilyMarkedNodes.remove(node);
                 permanentlyMarkedNodes.add(node);
             }
-            
-//            if (permanentlyMarkedNodes.contains(node)) {
-//                while (!nodeStack.isEmpty() 
-//                        && permanentlyMarkedNodes.contains(nodeStack.peek())) {
-//                    nodeStack.pop();
-//                    iteratorStack.pop();
-//                }
-//                
-//                continue mainLoop;
-//            }
-//            
-//            if (temporarilyMarkedNodes.contains(node)) {
-//                throw new GraphContainsCyclesException();
-//            }
-//            
-//            unmarkedNodes.remove(node);
-//            temporarilyMarkedNodes.add(node);
-//            
-//            // Iterate over children:
-//            while (iterator.hasNext()) {
-//                Integer child = iterator.next();
-//                nodeStack.push(child);
-//                iteratorStack.push(graph.getChildrenOf(child).iterator());
-//                continue mainLoop;
-//            }
-//            
-//            while (!iteratorStack.isEmpty() 
-//                    && !iteratorStack.peek().hasNext()) {
-//
-//                iteratorStack.pop();
-//                node = nodeStack.pop();
-//                temporarilyMarkedNodes.remove(node);
-//                permanentlyMarkedNodes.add(node);
-//                sortedNodes.add(node);
-//            }
-//            
-//            if (iteratorStack.isEmpty()) {
-//                return;
-//            } else {
-//                Integer nextNode = iteratorStack.peek().next();
-//                nodeStack.push(nextNode);
-//                iteratorStack.push(graph.getChildrenOf(nextNode).iterator());
-//            }
         }
     }
 }

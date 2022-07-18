@@ -1,10 +1,10 @@
 package com.github.coderodde.graph.sp.impl;
 
-import com.github.coderodde.graph.GraphTopologyListener;
 import com.github.coderodde.graph.PathDoesNotExistException;
 import com.github.coderodde.graph.impl.DirectedGraph;
 import com.github.coderodde.graph.sp.AbstractDagShortestPathQueryRunner;
 import com.github.coderodde.graph.sp.AbstractGraphPreprocessor;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +18,8 @@ import java.util.Map;
 public class IndexingPreprocessingDagShortestPathQueryRunner 
         extends AbstractDagShortestPathQueryRunner {
     
-    private List<Integer> topologicallySortedNodes;
-    private Map<Integer, Integer> indexMap;
+    private final List<Integer> topologicallySortedNodes = new ArrayList<>();
+    private final Map<Integer, Integer> indexMap = new HashMap<>();
     
     /**
      * Constructs the preprocessing shortest path query provider.
@@ -32,14 +32,15 @@ public class IndexingPreprocessingDagShortestPathQueryRunner
             DirectedGraph graph,
             AbstractGraphPreprocessor graphPreprocessor) {
         super(graph, graphPreprocessor);
-        graph.addGraphTopologyListener(new AnyGraphOperationListener());
     }
 
     @Override
     public DirectedGraph.Path queryShortestPath(Integer sourceNode, 
                                                 Integer targetNode) {
-        checkSourceNodeInGraph(sourceNode);
-        checkTargetNodeInGraph(targetNode);
+        checkGraphDirtyStatus();
+        
+        checkSourceNode(sourceNode);
+        checkTargetNode(targetNode);
         
         Map<Integer, Double> costMap = new HashMap<>();
         Map<Integer, Integer> parentMap = new HashMap<>();
@@ -82,16 +83,16 @@ public class IndexingPreprocessingDagShortestPathQueryRunner
         return graphPreprocessor.getPreprocessingDuration();
     }
     
-    private final class AnyGraphOperationListener 
-            implements GraphTopologyListener {
-        
-        @Override
-        public void onAny() {
+    private void checkGraphDirtyStatus() {
+        if (expectedGraphModCount != graph.getModificationCount()) {
+            expectedGraphModCount = graph.getModificationCount();
             graphPreprocessor.preprocessGraph();
-            indexMap = graphPreprocessor.getIndexMap();
-            topologicallySortedNodes = 
-                    graphPreprocessor.getTopologicallySortedNodes();
+            topologicallySortedNodes.clear();
+            topologicallySortedNodes.addAll(
+                    graphPreprocessor.getTopologicallySortedNodes());
+            
+            indexMap.clear();
+            indexMap.putAll(graphPreprocessor.getIndexMap());
         }
     }
-    
 }
