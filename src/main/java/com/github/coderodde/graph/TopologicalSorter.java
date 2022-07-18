@@ -1,7 +1,9 @@
 package com.github.coderodde.graph;
 
 import com.github.coderodde.graph.impl.DirectedGraph;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * This interface defines the API for topological sorters.
@@ -22,4 +24,17 @@ public interface TopologicalSorter {
      * @throws GraphContainsCyclesException if the input graph contains cycles.
      */
     List<Integer> sort(DirectedGraph graph) throws GraphContainsCyclesException;
+    
+    /**
+     * Removes and returns a node from a set of nodes.
+     * 
+     * @param set the set to remove from.
+     * @return a node.
+     */
+    default Integer removeNodeFromSet(Set<Integer> set) {
+        Iterator<Integer> iterator = set.iterator();
+        Integer node = iterator.next();
+        iterator.remove();
+        return node;
+    }
 }

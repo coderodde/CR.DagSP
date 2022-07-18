@@ -4,7 +4,6 @@ import com.github.coderodde.graph.GraphContainsCyclesException;
 import com.github.coderodde.graph.TopologicalSorter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
@@ -31,27 +30,30 @@ public class DFSTopologicalSorter implements TopologicalSorter {
         Deque<Integer> nodeStack = new ArrayDeque<>();
         Deque<Iterator<Integer>> iteratorStack = new ArrayDeque<>();
         
-        for (Integer node : graph.getAllNodes()) {
-            if (unmarkedNodes.contains(node)) {
-                nodeStack.add(node);
-                iteratorStack.add(graph.getChildrenOf(node).iterator());
-                visit(nodeStack,
-                      iteratorStack, 
-                      unmarkedNodes,
-                      temporarilyMarkedNodes,
-                      permanentlyMarkedNodes);
-            }
+        while (!unmarkedNodes.isEmpty()) {
+            Integer root = removeNodeFromSet(unmarkedNodes);
+            nodeStack.add(root);
+            iteratorStack.add(graph.getChildrenOf(root).iterator());
+            visit(graph,
+                  nodeStack,
+                  iteratorStack, 
+                  unmarkedNodes,
+                  temporarilyMarkedNodes,
+                  permanentlyMarkedNodes,
+                  sortedNodes);
         }
         
         Collections.reverse(sortedNodes);
         return sortedNodes;
     }
     
-    private static void visit(Deque<Integer> nodeStack,
+    private static void visit(DirectedGraph graph,
+                              Deque<Integer> nodeStack,
                               Deque<Iterator<Integer>> iteratorStack,
                               Set<Integer> unmarkedNodes,
                               Set<Integer> temporarilyMarkedNodes,
-                              Set<Integer> permanentlyMarkedNodes) {
+                              Set<Integer> permanentlyMarkedNodes,
+                              List<Integer> sortedNodes) {
         mainLoop:
         while (!nodeStack.isEmpty()) {
             Integer node = nodeStack.peek();
@@ -64,7 +66,9 @@ public class DFSTopologicalSorter implements TopologicalSorter {
                 Integer child = iterator.next();
                 
                 if (unmarkedNodes.contains(child)) {
-                    
+                    nodeStack.push(child);
+                    iteratorStack.push(graph.getChildrenOf(child).iterator());
+                    continue mainLoop;
                 } else if (temporarilyMarkedNodes.contains(child)) {
                     throw new GraphContainsCyclesException();
                 }
@@ -77,6 +81,49 @@ public class DFSTopologicalSorter implements TopologicalSorter {
                 temporarilyMarkedNodes.remove(node);
                 permanentlyMarkedNodes.add(node);
             }
+            
+//            if (permanentlyMarkedNodes.contains(node)) {
+//                while (!nodeStack.isEmpty() 
+//                        && permanentlyMarkedNodes.contains(nodeStack.peek())) {
+//                    nodeStack.pop();
+//                    iteratorStack.pop();
+//                }
+//                
+//                continue mainLoop;
+//            }
+//            
+//            if (temporarilyMarkedNodes.contains(node)) {
+//                throw new GraphContainsCyclesException();
+//            }
+//            
+//            unmarkedNodes.remove(node);
+//            temporarilyMarkedNodes.add(node);
+//            
+//            // Iterate over children:
+//            while (iterator.hasNext()) {
+//                Integer child = iterator.next();
+//                nodeStack.push(child);
+//                iteratorStack.push(graph.getChildrenOf(child).iterator());
+//                continue mainLoop;
+//            }
+//            
+//            while (!iteratorStack.isEmpty() 
+//                    && !iteratorStack.peek().hasNext()) {
+//
+//                iteratorStack.pop();
+//                node = nodeStack.pop();
+//                temporarilyMarkedNodes.remove(node);
+//                permanentlyMarkedNodes.add(node);
+//                sortedNodes.add(node);
+//            }
+//            
+//            if (iteratorStack.isEmpty()) {
+//                return;
+//            } else {
+//                Integer nextNode = iteratorStack.peek().next();
+//                nodeStack.push(nextNode);
+//                iteratorStack.push(graph.getChildrenOf(nextNode).iterator());
+//            }
         }
     }
 }

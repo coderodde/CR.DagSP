@@ -12,14 +12,15 @@ public class DFSTopologicalSorterTest extends AbstractTopologicalSorterTest {
     private final TopologicalSorter sorter = new DFSTopologicalSorter();
     
     @Test
-    public void testSortAcyclic() throws GraphContainsCyclesException {
+    public void testSortAcyclic() {
         List<Integer> sortedNodes = sorter.sort(acyclicGraph);
         
         assertTrue(isTopologicallySorted(acyclicGraph, sortedNodes));
     }
     
     @Test(expected = GraphContainsCyclesException.class)
-    public void testSortCyclic() throws GraphContainsCyclesException {
+    public void testSortCyclic() {
         sorter.sort(cyclicGraph);
+        fail("Should have thrown.");
     }
 }
