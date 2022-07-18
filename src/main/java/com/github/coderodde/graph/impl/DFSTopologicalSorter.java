@@ -2,8 +2,11 @@ package com.github.coderodde.graph.impl;
 
 import com.github.coderodde.graph.GraphContainsCyclesException;
 import com.github.coderodde.graph.TopologicalSorter;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -25,58 +28,55 @@ public class DFSTopologicalSorter implements TopologicalSorter {
         Set<Integer> unmarkedNodes = new HashSet<>(graph.getAllNodes());
         Set<Integer> temporarilyMarkedNodes = new HashSet<>();
         Set<Integer> permanentlyMarkedNodes = new HashSet<>();
+        Deque<Integer> nodeStack = new ArrayDeque<>();
+        Deque<Iterator<Integer>> iteratorStack = new ArrayDeque<>();
         
-        while (!unmarkedNodes.isEmpty()) {
-            Integer node = removeNode(unmarkedNodes);
-            sortUtil(node, 
-                     temporarilyMarkedNodes, 
-                     permanentlyMarkedNodes, 
-                     graph, 
-                     sortedNodes);
+        for (Integer node : graph.getAllNodes()) {
+            if (unmarkedNodes.contains(node)) {
+                nodeStack.add(node);
+                iteratorStack.add(graph.getChildrenOf(node).iterator());
+                visit(nodeStack,
+                      iteratorStack, 
+                      unmarkedNodes,
+                      temporarilyMarkedNodes,
+                      permanentlyMarkedNodes);
+            }
         }
         
         Collections.reverse(sortedNodes);
         return sortedNodes;
     }
     
-    private static Integer removeNode(Set<Integer> nodes) {
-        Iterator<Integer> iterator = nodes.iterator();
-        Integer removedNode = iterator.next();
-        iterator.remove();
-        return removedNode;
-    }
-    
-    private static void sortUtil(
-            Integer node, 
-            Set<Integer> temporarilyMarked, 
-            Set<Integer> permanentlyMarked, 
-            DirectedGraph graph, 
-            List<Integer> sortedNodes) 
-    throws GraphContainsCyclesException {
-        
-        if (permanentlyMarked.contains(node)) {
-            return;
+    private static void visit(Deque<Integer> nodeStack,
+                              Deque<Iterator<Integer>> iteratorStack,
+                              Set<Integer> unmarkedNodes,
+                              Set<Integer> temporarilyMarkedNodes,
+                              Set<Integer> permanentlyMarkedNodes) {
+        mainLoop:
+        while (!nodeStack.isEmpty()) {
+            Integer node = nodeStack.peek();
+            Iterator<Integer> iterator = iteratorStack.peek();
+            
+            unmarkedNodes.remove(node);
+            temporarilyMarkedNodes.add(node);
+            
+            while (iterator.hasNext()) {
+                Integer child = iterator.next();
+                
+                if (unmarkedNodes.contains(child)) {
+                    
+                } else if (temporarilyMarkedNodes.contains(child)) {
+                    throw new GraphContainsCyclesException();
+                }
+            }
+            
+            while (!iteratorStack.isEmpty() 
+                    && !iteratorStack.peek().hasNext()) {
+                iteratorStack.pop();
+                node = nodeStack.pop();
+                temporarilyMarkedNodes.remove(node);
+                permanentlyMarkedNodes.add(node);
+            }
         }
-        
-        if (temporarilyMarked.contains(node)) {
-            throw new GraphContainsCyclesException();
-        }
-        
-        temporarilyMarked.add(node);
-        
-        for (Integer child : graph.getChildrenOf(node)) {
-            sortUtil(child, 
-                     temporarilyMarked, 
-                     permanentlyMarked, 
-                     graph, 
-                     sortedNodes);
-        }
-        
-        temporarilyMarked.remove(node);
-        permanentlyMarked.add(node);
-        // Here we need to prepend the node, and not to append.
-        // Since ArrayList is slow on prepend, we will reverse
-        //the list when computatoin is done.
-        sortedNodes.add(node); 
     }
 }

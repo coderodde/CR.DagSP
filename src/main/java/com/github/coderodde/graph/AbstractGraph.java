@@ -6,15 +6,17 @@ import java.util.Set;
 
 /**
  * This class defines the API for graph data structures. The actual nodes are 
- * represented as integers. The client programmer should always be able to map
- * his domain specific nodes to the integers. 
+ * represented as objects of type {@link Integer}. The client programmer should 
+ * always be able to map the nodes to domain specific objects. 
  * <p>
  * Not only the query methods return a boolean value, but any other method
  * returns a boolean value indicating whether the structure of the graph has 
  * changed.
  * 
  * @author Rodion "rodde" Efremov
+ * @version 1.61 (Jul 18, 2022)
  * @version 1.6 (Jan 10, 2016)
+ * @since 1.6 (Jan 10, 2016)
  */
 public abstract class AbstractGraph {
 
@@ -27,7 +29,7 @@ public abstract class AbstractGraph {
      * has incident edges to it, the counter will reflect the removal of the 
      * edges as well.
      */
-    protected int modificationCount;
+    protected long modificationCount;
     
     /**
      * Caches the number of edges in this graph.
@@ -37,7 +39,7 @@ public abstract class AbstractGraph {
     /**
      * The set of graph topology listeners.
      */
-    protected Set<GraphTopologyListener> listeners = new HashSet<>();
+    protected final Set<GraphTopologyListener> listeners = new HashSet<>();
 
     /**
      * Returns the number of nodes in this graph.
@@ -51,63 +53,71 @@ public abstract class AbstractGraph {
      * 
      * @return the number of edges. 
      */
-    public abstract int getNumberOfEdges();
+    public int getNumberOfEdges() {
+        return edges;
+    }
+    
+    /**
+     * Returns the modification count of this graph.
+     * @return the modification count of this graph.
+     */
+    public long getModificationCount() {
+        return modificationCount;
+    }
 
     /**
-     * Adds the node with ID {@code nodeId} to this graph.
+     * Adds the node {@code node} to this graph.
      * 
-     * @param nodeId the ID of the node to add.
+     * @param node the node to add.
      * @return {@code true} if the structure of this graph has changed, which is
      *         the same as that the added node was not present in the graph.
      */
-    public abstract boolean addNode(int nodeId);
+    public abstract boolean addNode(Integer node);
 
     /**
      * Checks whether the given node is present in this graph.
      * 
-     * @param nodeId the query node.
-     * @return {@code true} if the query node is in this graph. {@code false} 
-     *         otherwise.
+     * @param node the query node.
+     * @return {@code true} if and only if the query node is in this graph.
      */
-    public abstract boolean hasNode(int nodeId);
+    public abstract boolean hasNode(Integer node);
 
     /**
-     * If {@code nodeId} is present in this graph, removes all edges incident on
-     * {@code nodeId}.
+     * If {@code node} is present in this graph, removes all edges incident on
+     * it.
      * 
-     * @param nodeId the node to clear.
-     * @return {@code true} if the node {@code nodeId} had at least one incident
-     *         edge and, thus, the structure of the graph changed.
+     * @param node the node to clear.
+     * @return {@code true} if and only if the node {@code node} had at least 
+     *         one incident edge and, thus, the structure of the graph changed.
      */
-    public abstract boolean clearNode(int nodeId);
+    public abstract boolean clearNode(Integer node);
 
     /**
      * Removes the argument node from this graph.
      * 
-     * @param nodeId the node to remove.
-     * @return {@code true} only if the node was present in the graph which 
-     *         means that the structure of the graph has changed.
+     * @param node the node to remove.
+     * @return {@code true} if and only if the node was present in the graph 
+     *         which means that the structure of the graph has changed.
      */
-    public abstract boolean removeNode(int nodeId);
+    public abstract boolean removeNode(Integer node);
 
     /**
-     * Creates an edge between {@code tailNodeId} and {@code headNodeId} with 
-     * weight {@code weight}. It depends on the concrete implementation of this
-     * abstract class what an edge {@code (tailNodeId, headNodeId)}. Two
-     * possible cases are an undirected edge and a directed edge. Refer to the 
-     * documentation of the implementing graph type.
+     * Creates an edge between {@code tailNode} and {@code headNode} with weight 
+     ' {@code weight}. It depends on the concrete implementation of this
+     * abstract class whether the edge {@code (tailNode, headNode)} is directed
+     * or undirected.
      * <p>
-     * If some of the input nodes are not present in this graph, it will be 
+     * If some of the input nodes are not present in this graph, they will be 
      * created silently.
      * 
-     * @param tailNodeId the tail node of the edge.
-     * @param headNodeId the head node of the edge.
+     * @param tailNode the tail node of the edge.
+     * @param headNode the head node of the edge.
      * @param weight the weight of the edge.
-     * @return {@code true} only if the edge was not present in the graph, or
-     *         the weight of the edge has changed.
+     * @return {@code true} if and only if the edge was not present in the 
+     *         graph, or the weight of the edge has changed.
      */
-    public abstract boolean addEdge(int tailNodeId, 
-                                    int headNodeId, 
+    public abstract boolean addEdge(Integer tailNode, 
+                                    Integer headNode, 
                                     double weight);
 
     /**
@@ -115,65 +125,65 @@ public abstract class AbstractGraph {
      * the default weight of 1.0. This method is a shortcut for constructing
      * (virtually) unweighted graphs.
      * 
-     * @param tailNodeId the tail node of the edge.
-     * @param headNodeId the head node of the edge.
-     * @return {@code true}  only if the edge was not present in the graph, or
-     *         the weight of the edge has changed.
+     * @param tailNode the tail node of the edge.
+     * @param headNode the head node of the edge.
+     * @return {@code true} if and only if the edge was not present in the
+     *         graph, or the weight of the edge has changed.
      */
-    public boolean addEdge(int tailNodeId, int headNodeId) {
-        return addEdge(tailNodeId, headNodeId, 1.0);
+    public boolean addEdge(Integer tailNode, Integer headNode) {
+        return addEdge(tailNode, headNode, 1.0);
     }
 
     /**
      * Returns a boolean value indicating whether this graph contains an edge
-     * from {@code tailNodeId} to {@code headNodeId}. 
+     * from {@code tailNode} to {@code headNode}. 
      * 
-     * @param tailNodeId the tail node of the query edge.
-     * @param headNodeId the head node of the query edge.
-     * @return {@code true} only if the query edge is in this graph.
+     * @param tailNode the tail node of the query edge.
+     * @param headNode the head node of the query edge.
+     * @return {@code true} if and only if the query edge is in this graph.
      */
-    public abstract boolean hasEdge(int tailNodeId, int headNodeId);
+    public abstract boolean hasEdge(Integer tailNode, Integer headNode);
 
     /**
-     * Returns the weight of the edge {@code (tailNodeId, headNodeId)}. If the
+     * Returns the weight of the edge {@code (tailNode, headNode)}. If the
      * query edge does not exist, returns {@link java.lang.Double#NaN}.
      * 
-     * @param tailNodeId the tail node of the query edge.
-     * @param headNodeId the head node of the query edge.
+     * @param tailNode the tail node of the query edge.
+     * @param headNode the head node of the query edge.
      * @return the weight of the edge.
      */
-    public abstract double getEdgeWeight(int tailNodeId, int headNodeId);
+    public abstract double getEdgeWeight(Integer tailNode, Integer headNode);
 
     /**
-     * Removes the edge from {@code tailNodeId} and {@code headNodeId}.
+     * Removes the edge from {@code tailNode} and {@code headNode}.
      * 
-     * @param tailNodeId the tail node of the edge to remove.
-     * @param headNodeId the head node of the edge to remove.
-     * @return {@code true} if the target edge was in this graph, and thus is
-     *         removed.
+     * @param tailNode the tail node of the edge to remove.
+     * @param headNode the head node of the edge to remove.
+     * @return {@code true} if and only if the target edge was in this graph,
+     *         and thus is removed.
      */
-    public abstract boolean removeEdge(int tailNodeId, int headNodeId);
+    public abstract boolean removeEdge(Integer tailNode, Integer headNode);
 
     /**
      * Returns the set of all nodes that are children of the node 
-     * {@code nodeId}. It depends on the actual graph implementation what is 
-     * understood by the termin <i>child</i>. In unweighted graphs, every child 
+     * {@code node}. It depends on the actual graph implementation what is 
+     * understood by the term <i>child</i>. In unweighted graphs, every child 
      * is also a parent of a node, which is not necessarily true in directed 
      * graphs.
      * 
-     * @param nodeId the query node.
-     * @return set of nodes that are children on the argument node.
+     * @param node the query node.
+     * @return set of nodes that are children of the argument node.
      */
-    public abstract Set<Integer> getChildrenOf(int nodeId);
+    public abstract Set<Integer> getChildrenOf(Integer node);
 
     /**
-     * Returns the set of all nodes that are parents of the node {@code nodeId}.
+     * Returns the set of all nodes that are parents of the node {@code node}.
      * 
-     * @see #getChildrenOf(int) 
-     * @param nodeId the query node.
-     * @return set of nodes that are parent of the arugment node.
+     * @see #getChildrenOf(Integer) 
+     * @param node the query node.
+     * @return set of nodes that are parent of the argument node.
      */
-    public abstract Set<Integer> getParentsOf(int nodeId);
+    public abstract Set<Integer> getParentsOf(Integer node);
 
     /**
      * Returns the set of all nodes stored in this graph.
@@ -186,15 +196,6 @@ public abstract class AbstractGraph {
      * Removes all nodes and edges from this graph.
      */
     public abstract void clear();
-    
-    /**
-     * Returns the modification count of this graph.
-     * 
-     * @return the modification count of this graph. 
-     */
-    public int getModificationCount() {
-        return modificationCount;
-    }
     
     /**
      * Adds a listener to this graph.
@@ -227,33 +228,33 @@ public abstract class AbstractGraph {
     /**
      * Delegates the {@code onAddEdge} message to all the listeners.
      * 
-     * @param tail the tail node of the added edge.
-     * @param head the head node of the added edge.
+     * @param tailNode the tail node of the added edge.
+     * @param headNode the head node of the added edge.
      * @param weight the weight of the added edge.
      */
-    protected void callListenersOnAddEdge(Integer tail, 
-                                          Integer head, 
+    protected void callListenersOnAddEdge(Integer tailNode, 
+                                          Integer headNode, 
                                           double weight) {
         for (GraphTopologyListener listener : listeners) {
-            listener.onAddEdge(tail, head, weight);
+            listener.onAddEdge(tailNode, headNode, weight);
         }
     }
     
     /**
      * Delegates the {@code onUpdateEdgeWeight} message to all the listeners.
      * 
-     * @param tail the tail node of the updated edge.
-     * @param head the head node of the updated edge.
+     * @param tailNode the tail node of the updated edge.
+     * @param headNode the head node of the updated edge.
      * @param oldWeight the old weight of the updated edge.
      * @param newWeight the new weight of the updated edge.
      */
-    protected void callListenersOnUpdateEdgeWeight(Integer tail, 
-                                                   Integer head, 
+    protected void callListenersOnUpdateEdgeWeight(Integer tailNode, 
+                                                   Integer headNode, 
                                                    double oldWeight,
                                                    double newWeight) {
         for (GraphTopologyListener listener : listeners) {
-            listener.onUpdateEdgeWeight(tail, 
-                                        head, 
+            listener.onUpdateEdgeWeight(tailNode, 
+                                        headNode, 
                                         oldWeight, 
                                         newWeight);
         }
@@ -284,15 +285,15 @@ public abstract class AbstractGraph {
     /**
      * Delegates the {@code onRemoveEdge} message to all the listeners.
      * 
-     * @param tail the tail node of the removed edge.
-     * @param head the head node of the removed edge.
+     * @param tailNodee the tail node of the removed edge.
+     * @param headNode the head node of the removed edge.
      * @param weight the weight of the removed edge.
      */
-    protected void callListenersOnRemoveEdge(Integer tail, 
-                                             Integer head, 
+    protected void callListenersOnRemoveEdge(Integer tailNodee, 
+                                             Integer headNode, 
                                              double weight) {
         for (GraphTopologyListener listener : listeners) {
-            listener.onRemoveEdge(tail, head, weight);
+            listener.onRemoveEdge(tailNodee, headNode, weight);
         }
     }
     

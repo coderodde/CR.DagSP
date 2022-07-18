@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -115,14 +116,16 @@ public class DirectedGraph extends AbstractGraph {
      * {@inheritDoc}
      */
     @Override
-    public boolean addNode(int nodeId) {
-        if (parentMap.containsKey(nodeId)) {
+    public boolean addNode(Integer node) {
+        Objects.requireNonNull(node);
+        
+        if (parentMap.containsKey(node)) {
             return false;
         }
 
-        parentMap.put(nodeId, new LinkedHashMap<>());
-        childMap .put(nodeId, new LinkedHashMap<>());
-        callListenersOnAddNode(nodeId);
+        parentMap.put(node, new LinkedHashMap<>());
+        childMap .put(node, new LinkedHashMap<>());
+        callListenersOnAddNode(node);
         callListenersOnAny();
         modificationCount++;
         return true;
@@ -132,38 +135,41 @@ public class DirectedGraph extends AbstractGraph {
      * {@inheritDoc}
      */
     @Override
-    public boolean hasNode(int nodeId) {
-        return parentMap.containsKey(nodeId);
+    public boolean hasNode(Integer node) {
+        Objects.requireNonNull(node);
+        return parentMap.containsKey(node);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean clearNode(int nodeId) {
-        if (!hasNode(nodeId)) {
+    public boolean clearNode(Integer node) {
+        Objects.requireNonNull(node);
+        
+        if (!hasNode(node)) {
             return false;
         }
 
-        Map<Integer, Double> parents = parentMap.get(nodeId);
-        Map<Integer, Double> children = childMap.get(nodeId);
+        Map<Integer, Double> parents = parentMap.get(node);
+        Map<Integer, Double> children = childMap.get(node);
 
         if (parents.isEmpty() && children.isEmpty()) {
             return false;
         }
 
         for (Integer childId : children.keySet()) {
-            parentMap.get(childId).remove(nodeId);
+            parentMap.get(childId).remove(node);
         }
 
         for (Integer parentId : parents.keySet()) {
-            childMap.get(parentId).remove(nodeId);
+            childMap.get(parentId).remove(node);
         }
 
         int mod = parents.size() + children.size();
         edges -= mod;
         modificationCount++;
-        callListenersOnClearNode(nodeId);
+        callListenersOnClearNode(node);
         callListenersOnAny();
         parents.clear();
         children.clear();
@@ -174,15 +180,17 @@ public class DirectedGraph extends AbstractGraph {
      * {@inheritDoc}
      */
     @Override
-    public boolean removeNode(int nodeId) {
-        if (!hasNode(nodeId)) {
+    public boolean removeNode(Integer node) {
+        Objects.requireNonNull(node);
+        
+        if (!hasNode(node)) {
             return false;
         }
 
-        clearNode(nodeId);
-        parentMap.remove(nodeId);
-        childMap.remove(nodeId);
-        callListenersOnRemoveNode(nodeId);
+        clearNode(node);
+        parentMap.remove(node);
+        childMap.remove(node);
+        callListenersOnRemoveNode(node);
         callListenersOnAny();
         modificationCount++;
         return true;
@@ -192,19 +200,25 @@ public class DirectedGraph extends AbstractGraph {
      * {@inheritDoc}
      */
     @Override
-    public boolean addEdge(int tailNodeId, int headNodeId, double newWeight) {
-        addNode(tailNodeId);
-        addNode(headNodeId);
+    public boolean addEdge(Integer tailNode,    
+                           Integer headNode, 
+                           double newWeight) {
+        
+        Objects.requireNonNull(tailNode);
+        Objects.requireNonNull(headNode);
+        
+        addNode(tailNode);
+        addNode(headNode);
 
-        if (childMap.get(tailNodeId).containsKey(headNodeId)) {
-            double oldWeight = childMap.get(tailNodeId).get(headNodeId);
-            childMap.get(tailNodeId).put(headNodeId, newWeight);
-            parentMap.get(headNodeId).put(tailNodeId, newWeight);
+        if (childMap.get(tailNode).containsKey(headNode)) {
+            double oldWeight = childMap.get(tailNode).get(headNode);
+            childMap.get(tailNode).put(headNode, newWeight);
+            parentMap.get(headNode).put(tailNode, newWeight);
             
             if (oldWeight != newWeight) {
                 modificationCount++;
-                callListenersOnUpdateEdgeWeight(tailNodeId, 
-                                                headNodeId, 
+                callListenersOnUpdateEdgeWeight(tailNode, 
+                                                headNode, 
                                                 oldWeight, 
                                                 newWeight);
                 callListenersOnAny();
@@ -213,11 +227,11 @@ public class DirectedGraph extends AbstractGraph {
             
             return false;
         } else {
-            childMap.get(tailNodeId).put(headNodeId, newWeight);
-            parentMap.get(headNodeId).put(tailNodeId, newWeight);
+            childMap.get(tailNode).put(headNode, newWeight);
+            parentMap.get(headNode).put(tailNode, newWeight);
             modificationCount++;
             edges++;
-            callListenersOnAddEdge(tailNodeId, headNodeId, newWeight);
+            callListenersOnAddEdge(tailNode, headNode, newWeight);
             callListenersOnAny();
             return true;
         }
@@ -227,45 +241,54 @@ public class DirectedGraph extends AbstractGraph {
      * {@inheritDoc}
      */
     @Override
-    public boolean hasEdge(int tailNodeId, int headNodeId) {
-        if (!childMap.containsKey(tailNodeId)) {
+    public boolean hasEdge(Integer tailNode, Integer headNode) {
+        Objects.requireNonNull(tailNode);
+        Objects.requireNonNull(headNode);
+        
+        if (!childMap.containsKey(tailNode)) {
             return false;
         }
 
-        return childMap.get(tailNodeId).containsKey(headNodeId);
+        return childMap.get(tailNode).containsKey(headNode);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public double getEdgeWeight(int tailNodeId, int headNodeId) {
-        if (!hasEdge(tailNodeId, headNodeId)) {
+    public double getEdgeWeight(Integer tailNode, Integer headNode) {
+        Objects.requireNonNull(tailNode);
+        Objects.requireNonNull(headNode);
+        
+        if (!hasEdge(tailNode, headNode)) {
             return Double.NaN;
         }
 
-        return childMap.get(tailNodeId).get(headNodeId);
+        return childMap.get(tailNode).get(headNode);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean removeEdge(int tailNodeId, int headNodeId) {
-        if (!childMap.containsKey(tailNodeId)) {
+    public boolean removeEdge(Integer tailNode, Integer headNode) {
+        Objects.requireNonNull(tailNode);
+        Objects.requireNonNull(headNode);
+        
+        if (!childMap.containsKey(tailNode)) {
             return false;
         }
 
-        if (!childMap.get(tailNodeId).containsKey(headNodeId)) {
+        if (!childMap.get(tailNode).containsKey(headNode)) {
             return false;
         }
 
-        double weight = childMap.get(tailNodeId).get(headNodeId);
-        childMap .get(tailNodeId).remove(headNodeId);
-        parentMap.get(headNodeId).remove(tailNodeId);
+        double weight = childMap.get(tailNode).get(headNode);
+        childMap .get(tailNode).remove(headNode);
+        parentMap.get(headNode).remove(tailNode);
         modificationCount++;
         edges--;
-        callListenersOnRemoveEdge(tailNodeId, headNodeId, weight);
+        callListenersOnRemoveEdge(tailNode, headNode, weight);
         callListenersOnAny();
         return true;
     }
@@ -274,26 +297,32 @@ public class DirectedGraph extends AbstractGraph {
      * {@inheritDoc}
      */
     @Override
-    public Set<Integer> getChildrenOf(int nodeId) {
-        if (!childMap.containsKey(nodeId)) {
-            return Collections.<Integer>emptySet();
+    public Set<Integer> getChildrenOf(Integer node) {
+        Objects.requireNonNull(node);
+        
+        if (!childMap.containsKey(node)) {
+            throw new IllegalStateException(
+                    "Node " + node + " is not in the graph.");
         }
 
         return Collections.
-                <Integer>unmodifiableSet(childMap.get(nodeId).keySet());
+                <Integer>unmodifiableSet(childMap.get(node).keySet());
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Set<Integer> getParentsOf(int nodeId) {
-        if (!parentMap.containsKey(nodeId)) {
-            return Collections.<Integer>emptySet();
+    public Set<Integer> getParentsOf(Integer node) {
+        Objects.requireNonNull(node);
+        
+        if (!parentMap.containsKey(node)) {
+            throw new IllegalStateException(
+                    "Node " + node + " is not in the graph.");
         }
 
         return Collections.
-                <Integer>unmodifiableSet(parentMap.get(nodeId).keySet());
+                <Integer>unmodifiableSet(parentMap.get(node).keySet());
     }
 
     /**
