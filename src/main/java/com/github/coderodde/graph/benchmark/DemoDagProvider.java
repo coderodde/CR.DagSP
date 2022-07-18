@@ -7,10 +7,10 @@ import java.util.Random;
 
 public class DemoDagProvider {
     
-    private static final int LAYERS = 1000;
-    private static final int MINIMUM_LAYER_SIZE = 10;
-    private static final int MAXIMUM_LAYER_SIZE = 20;
-    private static final int MAXIMUM_LAYER_JUMP = 4;
+    static final int LAYERS = 10_000;
+    static final int MINIMUM_LAYER_SIZE = 10;
+    static final int MAXIMUM_LAYER_SIZE = 20;
+    static final int MAXIMUM_LAYER_JUMP = 4;
 
     public static final class DemoData {
         public final DirectedGraph graph;

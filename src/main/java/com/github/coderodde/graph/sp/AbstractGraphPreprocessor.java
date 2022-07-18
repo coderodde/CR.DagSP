@@ -35,14 +35,14 @@ public abstract class AbstractGraphPreprocessor {
     protected void preprocessGraph(TopologicalSorter topologicalSorter) {
         long startTime = System.currentTimeMillis();
         
-        this.topologicallySortedNodes.clear();
-        this.topologicallySortedNodes.addAll(topologicalSorter.sort(graph));
+        topologicallySortedNodes.clear();
+        topologicallySortedNodes.addAll(topologicalSorter.sort(graph));
+        topologicalSorter.loadIndexMap(topologicallySortedNodes, indexMap);
         
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
         
         this.preprocessingDuration = duration;
-        computeIndexMap();
     }
     
     public List<Integer> getTopologicallySortedNodes() {

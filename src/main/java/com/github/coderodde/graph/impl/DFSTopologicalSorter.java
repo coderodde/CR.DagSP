@@ -80,6 +80,7 @@ public class DFSTopologicalSorter implements TopologicalSorter {
                 node = nodeStack.pop();
                 temporarilyMarkedNodes.remove(node);
                 permanentlyMarkedNodes.add(node);
+                sortedNodes.add(node);
             }
         }
     }

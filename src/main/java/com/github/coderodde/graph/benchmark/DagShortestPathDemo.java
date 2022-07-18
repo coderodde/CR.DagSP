@@ -27,17 +27,16 @@ public class DagShortestPathDemo {
         private final Integer targetNode;
 
         public ShortestPathQuery(DemoData demoData, Random random) {
-            int layers = demoData.graphLayers.size();
-            int layerIndex1 = random.nextInt(layers);
-            int layerIndex2 = random.nextInt(layers);
-            int startLayerIndex = Math.min(layerIndex1, layerIndex2);
-            int endLayerIndex = Math.max(layerIndex1, layerIndex2);
+            int sourceLayerIndex = random.nextInt(DemoDagProvider.LAYERS - 1);
+            int targetLayerIndex = sourceLayerIndex
+                                 + 1 + random.nextInt(DemoDagProvider.LAYERS -
+                                                      sourceLayerIndex - 1);
             
-            List<Integer> layer1 = demoData.graphLayers.get(startLayerIndex);
-            List<Integer> layer2 = demoData.graphLayers.get(endLayerIndex);
+            int jumps = targetLayerIndex - sourceLayerIndex;
+            sourceNode = choose(demoData.graphLayers.get(sourceLayerIndex), 
+                                random);
             
-            this.sourceNode = choose(layer1, random);
-            this.targetNode = choose(layer2, random);
+            targetNode = getTargetNodeImpl(sourceNode, jumps, demoData, random);
         }
         
         public Integer getSourceNode() {
@@ -95,7 +94,78 @@ public class DagShortestPathDemo {
     }
     
     private static void runNormal(DemoData demoData, Random random) {
+        DirectedGraph directedGraph = demoData.graph;
+        Integer isolatedNode = demoData.isolatedNode;
+        List<Integer> nodes = new ArrayList<>(directedGraph.getAllNodes());
         
+        // Get the query terminals:
+        ShortestPathQuery query = new ShortestPathQuery(demoData, random);
+        Integer sourceNode = query.getSourceNode();
+        Integer targetNode = query.getTargetNode();
+        
+        AbstractGraphPreprocessor dfsPreprocessor = 
+                new DFSGraphPreprocessor(directedGraph);
+        
+        AbstractGraphPreprocessor kahnsPreprocessor = 
+                new KahnsGraphPreprocessor(directedGraph);
+        
+        long startTime = System.currentTimeMillis();
+        
+        dfsPreprocessor.preprocessGraph();
+        
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+        
+        System.out.println(
+                dfsPreprocessor.getClass().getSimpleName() 
+                        + " in " 
+                        + duration 
+                        + " ms.");
+        
+        startTime = System.currentTimeMillis();
+        
+        kahnsPreprocessor.preprocessGraph();
+        
+        endTime = System.currentTimeMillis();
+        duration = endTime - startTime;
+        
+        System.out.println(
+                kahnsPreprocessor.getClass().getSimpleName() 
+                        + " in " 
+                        + duration 
+                        + " ms.");
+        
+        AbstractDagShortestPathQueryRunner naiveDFSRunner = 
+                new NaivePreprocessingDagShortestPathQueryRunner(
+                        directedGraph, 
+                        dfsPreprocessor);
+        
+        AbstractDagShortestPathQueryRunner naiveKahnsRunner = 
+                new NaivePreprocessingDagShortestPathQueryRunner(
+                        directedGraph, 
+                        kahnsPreprocessor);
+        
+        AbstractDagShortestPathQueryRunner indexingDFSRunner = 
+                new IndexingPreprocessingDagShortestPathQueryRunner(
+                        directedGraph, 
+                        dfsPreprocessor);
+        
+        AbstractDagShortestPathQueryRunner indexingKahnsRunner = 
+                new IndexingPreprocessingDagShortestPathQueryRunner(
+                        directedGraph, 
+                        kahnsPreprocessor);
+        
+        List<SearchResult> searchResults = new ArrayList<>(4);
+        
+        searchResults.add(search(naiveDFSRunner, sourceNode, targetNode));
+        searchResults.add(search(naiveKahnsRunner, sourceNode, targetNode));
+        searchResults.add(search(indexingDFSRunner, sourceNode, targetNode));
+        searchResults.add(search(indexingKahnsRunner, 
+                                 sourceNode, 
+                                 isolatedNode));
+        
+        printTerminalNodes(sourceNode, isolatedNode);
+        print(searchResults);
     }
     
     private static void runUnreachable(DemoData demoData, Random random) {
@@ -212,5 +282,23 @@ public class DagShortestPathDemo {
     
     private static <T> T choose(List<T> list, Random random) {
         return list.get(random.nextInt(list.size()));
+    }
+    
+    private static Integer getTargetNodeImpl(Integer sourceNode,
+                                             int jumps,
+                                             DemoData demoData, 
+                                             Random random) {
+        
+        DirectedGraph graph = demoData.graph;
+        Integer currentNode = sourceNode;
+        
+        for (int i = 0; i < jumps; i++) {
+            List<Integer> nextLayer =
+                    new ArrayList<>(graph.getChildrenOf(currentNode));
+            
+            currentNode = choose(nextLayer, random);
+        }
+        
+        return currentNode;
     }
 }

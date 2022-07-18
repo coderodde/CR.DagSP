@@ -3,6 +3,7 @@ package com.github.coderodde.graph;
 import com.github.coderodde.graph.impl.DirectedGraph;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -36,5 +37,19 @@ public interface TopologicalSorter {
         Integer node = iterator.next();
         iterator.remove();
         return node;
+    }
+    
+    /**
+     * Loads the index map from {@code nodeList} to {@code indexMap}.
+     * 
+     * @param nodeList the (topologically sorted) list of nodes.
+     * @param indexMap the target map mapping nodes to their appearance indices
+     *                 in {@code nodeList}.
+     */
+    default void loadIndexMap(List<Integer> nodeList, 
+                              Map<Integer, Integer> indexMap) {
+        for (int index = 0; index < nodeList.size(); index++) {
+            indexMap.put(nodeList.get(index), index);
+        }
     }
 }
