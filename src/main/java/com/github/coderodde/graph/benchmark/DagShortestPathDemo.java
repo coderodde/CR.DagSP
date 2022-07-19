@@ -101,7 +101,6 @@ public class DagShortestPathDemo {
     
     private static void runNormal(DemoData demoData, Random random) {
         DirectedGraph directedGraph = demoData.graph;
-        Integer isolatedNode = demoData.isolatedNode;
         
         // Get the query terminals:
         ShortestPathQuery query = new ShortestPathQuery(demoData, random);
@@ -132,7 +131,7 @@ public class DagShortestPathDemo {
         
         System.out.println(
                 dfsPreprocessor.getClass().getSimpleName() 
-                        + ": in topological order: " 
+                        + " in topological order: " 
                         + isTopologicallySorted(directedGraph, sortedNodes));
         
         startTime = System.currentTimeMillis();
@@ -154,7 +153,7 @@ public class DagShortestPathDemo {
         
         System.out.println(
                 kahnsPreprocessor.getClass().getSimpleName() 
-                        + ": in topological order: " 
+                        + " in topological order: " 
                         + isTopologicallySorted(directedGraph, sortedNodes));
         
         AbstractDagShortestPathQueryRunner naiveDFSRunner = 
@@ -162,29 +161,17 @@ public class DagShortestPathDemo {
                         directedGraph, 
                         dfsPreprocessor);
         
-        AbstractDagShortestPathQueryRunner naiveKahnsRunner = 
-                new NaivePreprocessingDagShortestPathQueryRunner(
-                        directedGraph, 
-                        kahnsPreprocessor);
-        
         AbstractDagShortestPathQueryRunner indexingDFSRunner = 
                 new IndexingPreprocessingDagShortestPathQueryRunner(
                         directedGraph, 
                         dfsPreprocessor);
         
-        AbstractDagShortestPathQueryRunner indexingKahnsRunner = 
-                new IndexingPreprocessingDagShortestPathQueryRunner(
-                        directedGraph, 
-                        kahnsPreprocessor);
-        
         List<SearchResult> searchResults = new ArrayList<>(4);
         
         searchResults.add(search(naiveDFSRunner, sourceNode, targetNode));
-        searchResults.add(search(naiveKahnsRunner, sourceNode, targetNode));
         searchResults.add(search(indexingDFSRunner, sourceNode, targetNode));
-        searchResults.add(search(indexingKahnsRunner, sourceNode, targetNode));
         
-        printTerminalNodes(sourceNode, isolatedNode);
+        printTerminalNodes(sourceNode, targetNode);
         print(searchResults);
     }
     
@@ -231,29 +218,15 @@ public class DagShortestPathDemo {
                         directedGraph, 
                         dfsPreprocessor);
         
-        AbstractDagShortestPathQueryRunner naiveKahnsRunner = 
-                new NaivePreprocessingDagShortestPathQueryRunner(
-                        directedGraph, 
-                        kahnsPreprocessor);
-        
         AbstractDagShortestPathQueryRunner indexingDFSRunner = 
                 new IndexingPreprocessingDagShortestPathQueryRunner(
                         directedGraph, 
                         dfsPreprocessor);
         
-        AbstractDagShortestPathQueryRunner indexingKahnsRunner = 
-                new IndexingPreprocessingDagShortestPathQueryRunner(
-                        directedGraph, 
-                        kahnsPreprocessor);
-        
         List<SearchResult> searchResults = new ArrayList<>(4);
         
         searchResults.add(search(naiveDFSRunner, sourceNode, isolatedNode));
-        searchResults.add(search(naiveKahnsRunner, sourceNode, isolatedNode));
         searchResults.add(search(indexingDFSRunner, sourceNode, isolatedNode));
-        searchResults.add(search(indexingKahnsRunner, 
-                                 sourceNode, 
-                                 isolatedNode));
         
         printTerminalNodes(sourceNode, isolatedNode);
         print(searchResults);
@@ -286,7 +259,7 @@ public class DagShortestPathDemo {
             Integer sourceNode, 
             Integer targetNode) {
         
-        String algorithmName = runner.getClass().getSimpleName();
+        String algorithmName = runner.toString();
         long startTime = System.currentTimeMillis(); 
         
         try {

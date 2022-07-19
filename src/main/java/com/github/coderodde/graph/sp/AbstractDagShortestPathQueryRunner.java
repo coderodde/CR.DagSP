@@ -32,6 +32,14 @@ public abstract class AbstractDagShortestPathQueryRunner {
     public abstract DirectedGraph.Path queryShortestPath(Integer sourceNode,
                                                          Integer targetNode);
     
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() 
+                + "[" 
+                + graphPreprocessor.getClass().getSimpleName() 
+                + "]";
+    }
+    
     /**
      * Reconstructs the shortest path.
      * 

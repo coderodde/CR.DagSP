@@ -7,7 +7,7 @@ import java.util.Random;
 
 public class DemoDagProvider {
     
-    static final int LAYERS = 10_000;
+    static final int LAYERS = 20_000;
     static final int MINIMUM_LAYER_SIZE = 10;
     static final int MAXIMUM_LAYER_SIZE = 20;
     static final int MAXIMUM_LAYER_JUMP = 4;
@@ -52,7 +52,7 @@ public class DemoDagProvider {
     private static void getIsolatedNode(DemoData demoData, Random random) {
         int layerIndex = random.nextInt(demoData.graphLayers.size());
         List<Integer> layer = demoData.graphLayers.get(layerIndex);
-        Integer isolatedNode = demoData.graph.size() + 2;
+        Integer isolatedNode = Integer.MAX_VALUE;
         demoData.graph.addNode(isolatedNode);
         layer.add(random.nextInt(layer.size()), isolatedNode);
         demoData.isolatedNode = isolatedNode;
