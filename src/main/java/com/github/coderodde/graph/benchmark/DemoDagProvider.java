@@ -11,6 +11,7 @@ public class DemoDagProvider {
     static final int MINIMUM_LAYER_SIZE = 10;
     static final int MAXIMUM_LAYER_SIZE = 20;
     static final int MAXIMUM_LAYER_JUMP = 4;
+    static final int ARCS_PER_LAYER = 50;
 
     public static final class DemoData {
         public final DirectedGraph graph;
@@ -71,7 +72,8 @@ public class DemoDagProvider {
         int totalLayers = demoData.graphLayers.size();
         List<Integer> sourceLayer = demoData.graphLayers.get(layerIndex);
         
-        for (Integer node : sourceLayer) {
+        for (int i = 0; i < ARCS_PER_LAYER; i++) {
+            Integer node = choose(sourceLayer, random);
             int nextLayerIndex = random.nextInt(1, MAXIMUM_LAYER_JUMP + 1);
             nextLayerIndex = Math.min(layerIndex + nextLayerIndex, 
                                       totalLayers - 1);
@@ -80,5 +82,9 @@ public class DemoDagProvider {
             Integer nextNode = nextLayer.get(random.nextInt(nextLayer.size()));
             demoData.graph.addEdge(node, nextNode, random.nextDouble());
         }
+    }
+    
+    private static <T> T choose(List<T> list, Random random) {
+        return list.get(random.nextInt(list.size()));
     }
 }

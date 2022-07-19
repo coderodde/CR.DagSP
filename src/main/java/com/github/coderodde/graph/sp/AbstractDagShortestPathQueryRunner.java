@@ -44,7 +44,7 @@ public abstract class AbstractDagShortestPathQueryRunner {
                       Map<Integer, Integer> parentMap) {
             
         List<Integer> pathList = new ArrayList<>();
-        Integer node = parentMap.get(targetNode);
+        Integer node = targetNode;
         
         while (node != null) {
             pathList.add(node);

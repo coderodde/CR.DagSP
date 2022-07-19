@@ -1,6 +1,7 @@
 package com.github.coderodde.graph.benchmark;
 
 import com.github.coderodde.graph.PathDoesNotExistException;
+import static com.github.coderodde.graph.TopologicalSortChecker.isTopologicallySorted;
 import com.github.coderodde.graph.benchmark.DemoDagProvider.DemoData;
 import com.github.coderodde.graph.impl.DirectedGraph;
 import com.github.coderodde.graph.impl.DirectedGraph.Path;
@@ -10,10 +11,7 @@ import com.github.coderodde.graph.sp.impl.DFSGraphPreprocessor;
 import com.github.coderodde.graph.sp.impl.IndexingPreprocessingDagShortestPathQueryRunner;
 import com.github.coderodde.graph.sp.impl.KahnsGraphPreprocessor;
 import com.github.coderodde.graph.sp.impl.NaivePreprocessingDagShortestPathQueryRunner;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Deque;
 import java.util.List;
 import java.util.Random;
 
@@ -30,16 +28,21 @@ public class DagShortestPathDemo {
         private final Integer targetNode;
 
         public ShortestPathQuery(DemoData demoData, Random random) {
-            int sourceLayerIndex = random.nextInt(DemoDagProvider.LAYERS - 1);
-            int targetLayerIndex = sourceLayerIndex
-                                 + 1 + random.nextInt(DemoDagProvider.LAYERS -
-                                                      sourceLayerIndex - 1);
             
-            int jumps = targetLayerIndex - sourceLayerIndex;
-            sourceNode = choose(demoData.graphLayers.get(sourceLayerIndex), 
-                                random);
+            int layerIndex1 = random.nextInt(demoData.graphLayers.size());
+            int layerIndex2 = random.nextInt(demoData.graphLayers.size());
             
-            targetNode = getTargetNodeImpl(sourceNode, jumps, demoData, random);
+            int sourceLayerIndex = Math.min(layerIndex1, layerIndex2);
+            int targetLayerIndex = Math.max(layerIndex1, layerIndex2);
+            
+            List<Integer> sourceLayer = 
+                    demoData.graphLayers.get(sourceLayerIndex);
+            
+            List<Integer> targetLayer = 
+                    demoData.graphLayers.get(targetLayerIndex);
+            
+            sourceNode = choose(sourceLayer, random);
+            targetNode = choose(targetLayer, random);
         }
         
         public Integer getSourceNode() {
@@ -99,7 +102,6 @@ public class DagShortestPathDemo {
     private static void runNormal(DemoData demoData, Random random) {
         DirectedGraph directedGraph = demoData.graph;
         Integer isolatedNode = demoData.isolatedNode;
-        List<Integer> nodes = new ArrayList<>(directedGraph.getAllNodes());
         
         // Get the query terminals:
         ShortestPathQuery query = new ShortestPathQuery(demoData, random);
@@ -125,6 +127,14 @@ public class DagShortestPathDemo {
                         + duration 
                         + " ms.");
         
+        List<Integer> sortedNodes = 
+                dfsPreprocessor.getTopologicallySortedNodes();
+        
+        System.out.println(
+                dfsPreprocessor.getClass().getSimpleName() 
+                        + ": in topological order: " 
+                        + isTopologicallySorted(directedGraph, sortedNodes));
+        
         startTime = System.currentTimeMillis();
         
         kahnsPreprocessor.preprocessGraph();
@@ -137,6 +147,15 @@ public class DagShortestPathDemo {
                         + " in " 
                         + duration 
                         + " ms.");
+        
+        
+        sortedNodes = 
+                kahnsPreprocessor.getTopologicallySortedNodes();
+        
+        System.out.println(
+                kahnsPreprocessor.getClass().getSimpleName() 
+                        + ": in topological order: " 
+                        + isTopologicallySorted(directedGraph, sortedNodes));
         
         AbstractDagShortestPathQueryRunner naiveDFSRunner = 
                 new NaivePreprocessingDagShortestPathQueryRunner(
@@ -163,9 +182,7 @@ public class DagShortestPathDemo {
         searchResults.add(search(naiveDFSRunner, sourceNode, targetNode));
         searchResults.add(search(naiveKahnsRunner, sourceNode, targetNode));
         searchResults.add(search(indexingDFSRunner, sourceNode, targetNode));
-        searchResults.add(search(indexingKahnsRunner, 
-                                 sourceNode, 
-                                 isolatedNode));
+        searchResults.add(search(indexingKahnsRunner, sourceNode, targetNode));
         
         printTerminalNodes(sourceNode, isolatedNode);
         print(searchResults);
@@ -240,6 +257,7 @@ public class DagShortestPathDemo {
         
         printTerminalNodes(sourceNode, isolatedNode);
         print(searchResults);
+        System.out.println("Isolated node: " + demoData.isolatedNode);
     }
     
     private static void printTerminalNodes(Integer sourceNode, 
@@ -285,28 +303,5 @@ public class DagShortestPathDemo {
     
     private static <T> T choose(List<T> list, Random random) {
         return list.get(random.nextInt(list.size()));
-    }
-    
-    private static Integer getTargetNodeImpl(Integer sourceNode,
-                                             int jumps,
-                                             DemoData demoData, 
-                                             Random random) {
-        
-        Deque<List<Integer>> layerPath = new ArrayDeque<>(jumps + 1);;
-        layerPath.push(Arrays.asList(sourceNode));
-        
-        for (int i = 0; i < jumps; i++) {
-            List<Integer> topLayer = layerPath.peek();
-            
-            if (topLayer.isEmpty()) {
-                layerPath.pop();
-                i--;
-                continue;
-            }
-            
-            layerPath.push(topLayer);
-        }
-        
-        return choose(layerPath.peek(), random);
     }
 }
